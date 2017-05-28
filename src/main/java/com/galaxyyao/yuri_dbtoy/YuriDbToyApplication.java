@@ -1,18 +1,16 @@
 package com.galaxyyao.yuri_dbtoy;
 
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
-import com.galaxyyao.yuri_dbtoy.ui.GuiMain;
+import com.galaxyyao.yuri_dbtoy.ui.MainPanel;
 
 public class YuriDbToyApplication {
 	public static void main(String[] args) {
-		// Schedule a job for the event dispatch thread:
-		// creating and showing this application's GUI.
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				// Turn off metal's use of bold fonts
-				// UIManager.put("swing.boldMetal", Boolean.FALSE);
-				GuiMain.createAndShowGUI();
+				UIManager.put("swing.boldMetal", Boolean.FALSE);
+				MainPanel.createAndShowGUI();
 			}
 		});
 	}
