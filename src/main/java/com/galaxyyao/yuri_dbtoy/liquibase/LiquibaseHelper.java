@@ -7,6 +7,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.database.Database;
@@ -16,7 +19,9 @@ import liquibase.exception.LiquibaseException;
 import liquibase.resource.FileSystemResourceAccessor;
 
 public class LiquibaseHelper {
-	public static void main(String[] args) throws IOException, LiquibaseException, SQLException {
+	private static final Logger logger=LoggerFactory.getLogger(LiquibaseHelper.class);
+	
+	public static void generateSql(String changeLogFilePath) {
 		try {
 			Class.forName("oracle.jdbc.OracleDriver");
 		} catch (ClassNotFoundException e) {
@@ -33,15 +38,15 @@ public class LiquibaseHelper {
 					.findCorrectDatabaseImplementation(new JdbcConnection(connection));
 			database.setDefaultSchemaName("TESTDB");
 
-			Liquibase liquibase = new liquibase.Liquibase("D:\\changelogtest.xml", new FileSystemResourceAccessor(), database);
+			Liquibase liquibase = new liquibase.Liquibase(changeLogFilePath, new FileSystemResourceAccessor(),
+					database);
+			String sqlFilePath = changeLogFilePath.substring(0, changeLogFilePath.lastIndexOf(".")) + ".sql";
 
 			// liquibase.update(new Contexts(), new LabelExpression());
-			Writer writer = new FileWriter("D:\\output.sql");
+			Writer writer = new FileWriter(sqlFilePath);
 			liquibase.update(new Contexts(), writer);
-		} catch (SQLException e) {
-			System.out.println("Connection Failed! Check output console");
-			e.printStackTrace();
-			return;
+		} catch (SQLException | LiquibaseException | IOException e) {
+			logger.error(e.getMessage());
 		}
 	}
 }

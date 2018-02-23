@@ -11,6 +11,8 @@ public class DocColumn {
 	
 	private Boolean isAllowNull;
 	
+	private Boolean isPrimaryKey;
+	
 	private String defaultValue;
 
 	public int getColIndex() {
@@ -51,6 +53,14 @@ public class DocColumn {
 
 	public void setIsAllowNull(Boolean isAllowNull) {
 		this.isAllowNull = isAllowNull;
+	}
+
+	public Boolean getIsPrimaryKey() {
+		return isPrimaryKey;
+	}
+
+	public void setIsPrimaryKey(Boolean isPrimaryKey) {
+		this.isPrimaryKey = isPrimaryKey;
 	}
 
 	public String getDefaultValue() {

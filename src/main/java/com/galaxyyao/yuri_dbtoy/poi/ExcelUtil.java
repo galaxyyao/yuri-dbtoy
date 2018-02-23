@@ -88,10 +88,13 @@ public class ExcelUtil {
 			docColumn.setColIndex(i - 1);
 			docColumn.setColName(row.getCell(0).getStringCellValue());
 			docColumn.setColType(row.getCell(1).getStringCellValue());
-			docColumn.setIsAllowNull("Y".equals(row.getCell(2).getStringCellValue()));
-			String defaultValue = (row.getCell(3) == null) ? "" : row.getCell(3).getStringCellValue();
+			String isPrimaryKeyText = (row.getCell(2) == null) ? "" : row.getCell(2).getStringCellValue();
+			docColumn.setIsPrimaryKey("Y".equals(isPrimaryKeyText));
+			String isAllowNullText = (row.getCell(3) == null) ? "" : row.getCell(3).getStringCellValue();
+			docColumn.setIsAllowNull(!"N".equals(isAllowNullText));
+			String defaultValue = (row.getCell(4) == null) ? "" : row.getCell(4).getStringCellValue();
 			docColumn.setDefaultValue(defaultValue);
-			String colDesc = (row.getCell(4) == null) ? "" : row.getCell(4).getStringCellValue();
+			String colDesc = (row.getCell(5) == null) ? "" : row.getCell(5).getStringCellValue();
 			docColumn.setColDesc(colDesc);
 			docColumns.add(docColumn);
 		}
