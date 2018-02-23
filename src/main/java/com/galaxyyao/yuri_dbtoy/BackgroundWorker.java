@@ -1,5 +1,10 @@
 package com.galaxyyao.yuri_dbtoy;
 
+import java.util.List;
+
+import com.galaxyyao.yuri_dbtoy.domain.DocTable;
+import com.galaxyyao.yuri_dbtoy.poi.ExcelUtil;
+
 public class BackgroundWorker {
 	private String path;
 
@@ -7,7 +12,7 @@ public class BackgroundWorker {
 		this.path = path;
 	}
 
-	public String readExcelAndGenerateSql() {
-		return "aaa";
+	public List<DocTable> readExcelAndGenerateSql() {
+		return ExcelUtil.read(path);
 	}
 }

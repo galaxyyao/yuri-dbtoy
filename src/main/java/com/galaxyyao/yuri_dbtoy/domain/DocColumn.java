@@ -1,6 +1,6 @@
 package com.galaxyyao.yuri_dbtoy.domain;
 
-public class Column {
+public class DocColumn {
 	private int colIndex;
 	
 	private String colName;
@@ -8,6 +8,10 @@ public class Column {
 	private String colDesc;
 	
 	private String colType;
+	
+	private Boolean isAllowNull;
+	
+	private String defaultValue;
 
 	public int getColIndex() {
 		return colIndex;
@@ -39,5 +43,21 @@ public class Column {
 
 	public void setColType(String colType) {
 		this.colType = colType;
+	}
+
+	public Boolean getIsAllowNull() {
+		return isAllowNull;
+	}
+
+	public void setIsAllowNull(Boolean isAllowNull) {
+		this.isAllowNull = isAllowNull;
+	}
+
+	public String getDefaultValue() {
+		return defaultValue;
+	}
+
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
 	}
 }
