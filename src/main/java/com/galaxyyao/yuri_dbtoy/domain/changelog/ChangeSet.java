@@ -13,8 +13,11 @@ public class ChangeSet {
 	@XmlAttribute
 	protected String author;
 	
-	@XmlElement(nillable = true) 
+	@XmlElement
 	protected CreateTable createTable;
+	
+	@XmlElement
+	protected DropTable dropTable;
 
 	public String getId() {
 		return id;
@@ -38,5 +41,13 @@ public class ChangeSet {
 
 	public void setCreateTable(CreateTable createTable) {
 		this.createTable = createTable;
+	}
+
+	public DropTable getDropTable() {
+		return dropTable;
+	}
+
+	public void setDropTable(DropTable dropTable) {
+		this.dropTable = dropTable;
 	}
 }

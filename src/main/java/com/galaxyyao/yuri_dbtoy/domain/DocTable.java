@@ -9,6 +9,8 @@ public class DocTable {
 	
 	private String tableDesc;
 	
+	private List<String> syncColumns;
+	
 	private List<DocColumn> columns;
 	
 	private Boolean isSelected;
@@ -51,5 +53,13 @@ public class DocTable {
 
 	public void setIsSelected(Boolean isSelected) {
 		this.isSelected = isSelected;
+	}
+
+	public List<String> getSyncColumns() {
+		return syncColumns;
+	}
+
+	public void setSyncColumns(List<String> syncColumns) {
+		this.syncColumns = syncColumns;
 	}
 }
