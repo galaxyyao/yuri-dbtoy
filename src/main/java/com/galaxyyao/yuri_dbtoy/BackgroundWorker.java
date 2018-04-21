@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.galaxyyao.yuri_dbtoy.domain.DocColumn;
+import com.galaxyyao.yuri_dbtoy.domain.DocIndex;
 import com.galaxyyao.yuri_dbtoy.domain.DocTable;
 import com.galaxyyao.yuri_dbtoy.domain.changelog.DatabaseChangeLog;
 import com.galaxyyao.yuri_dbtoy.util.ConfigUtil;
@@ -28,7 +29,7 @@ public class BackgroundWorker {
 	private static final Logger logger = LoggerFactory.getLogger(BackgroundWorker.class);
 
 	public enum OPERATION_TYPE_ENUM {
-		CREATE, CREATE_WITH_COMMON_COLUMNS, DROP, TRUNCATE_AND_INSERT, ON_INSERT_TRIGGER, ON_UPDATE_TRIGGER, ON_DELETE_TRIGGER, ENABLE_TRIGGER, DISABLE_TRIGGER, GRANT_DML_PRIVILEGE
+		CREATE, CREATE_WITH_COMMON_COLUMNS, DROP, TRUNCATE_AND_INSERT, ON_INSERT_TRIGGER, ON_UPDATE_TRIGGER, ON_DELETE_TRIGGER, ENABLE_TRIGGER, DISABLE_TRIGGER, GRANT_DML_PRIVILEGE, UNIQUE_CONSTRAINT, INDEX
 	}
 
 	public List<DocTable> readExcel(String path, String filename) throws FileNotFoundException {
@@ -326,7 +327,14 @@ public class BackgroundWorker {
 		String fileName = getOutputFileName(OPERATION_TYPE_ENUM.ENABLE_TRIGGER);
 		StringBuilder sbSql = new StringBuilder();
 		for (DocTable docTable : docTables) {
-			sbSql.append("ALTER TABLE " + defaultSchemaName + "." + docTable.getTableName() + " ENABLE ALL TRIGGERS;");
+			sbSql.append("ALTER TRIGGER " + defaultSchemaName + "." + "trg_d_" + docTable.getTableName().substring(1)
+					+ " ENABLE;");
+			sbSql.append(System.lineSeparator());
+			sbSql.append("ALTER TRIGGER " + defaultSchemaName + "." + "trg_i_" + docTable.getTableName().substring(1)
+					+ " ENABLE;");
+			sbSql.append(System.lineSeparator());
+			sbSql.append("ALTER TRIGGER " + defaultSchemaName + "." + "trg_u_" + docTable.getTableName().substring(1)
+					+ " ENABLE;");
 			sbSql.append(System.lineSeparator());
 		}
 		writeSqlToFile(folderPath, fileName, sbSql);
@@ -340,7 +348,14 @@ public class BackgroundWorker {
 		String fileName = getOutputFileName(OPERATION_TYPE_ENUM.DISABLE_TRIGGER);
 		StringBuilder sbSql = new StringBuilder();
 		for (DocTable docTable : docTables) {
-			sbSql.append("ALTER TABLE " + defaultSchemaName + "." + docTable.getTableName() + " DISABLE ALL TRIGGERS;");
+			sbSql.append("ALTER TRIGGER " + defaultSchemaName + "." + "trg_d_" + docTable.getTableName().substring(1)
+					+ " DISABLE;");
+			sbSql.append(System.lineSeparator());
+			sbSql.append("ALTER TRIGGER " + defaultSchemaName + "." + "trg_i_" + docTable.getTableName().substring(1)
+					+ " DISABLE;");
+			sbSql.append(System.lineSeparator());
+			sbSql.append("ALTER TRIGGER " + defaultSchemaName + "." + "trg_u_" + docTable.getTableName().substring(1)
+					+ " DISABLE;");
 			sbSql.append(System.lineSeparator());
 		}
 		writeSqlToFile(folderPath, fileName, sbSql);
@@ -358,6 +373,43 @@ public class BackgroundWorker {
 			sbSql.append("GRANT SELECT, INSERT, UPDATE, DELETE ON " + defaultSchemaName + "." + docTable.getTableName()
 					+ " TO " + fromSchemaName + ";");
 			sbSql.append(System.lineSeparator());
+		}
+		writeSqlToFile(folderPath, fileName, sbSql);
+		return folderPath + fileName;
+	}
+
+	public String generateCreateUniqueConstraint(String folderPath, List<DocTable> docTables) {
+		Config conf = ConfigUtil.getConfig();
+		String defaultSchemaName = conf.getString("database.defaultschema");
+
+		String fileName = getOutputFileName(OPERATION_TYPE_ENUM.UNIQUE_CONSTRAINT);
+		StringBuilder sbSql = new StringBuilder();
+		for (DocTable docTable : docTables) {
+			for (String uniqueConstraintColumn : docTable.getUniqueConstraintColumns()) {
+				sbSql.append("ALTER TABLE " + defaultSchemaName + "." + docTable.getTableName() + " ADD CONSTRAINT UC_"
+						+ docTable.getTableName().substring(1) + " UNIQUE (" + uniqueConstraintColumn + ");");
+				sbSql.append(System.lineSeparator());
+			}
+		}
+		writeSqlToFile(folderPath, fileName, sbSql);
+		return folderPath + fileName;
+	}
+
+	public String generateCreateIndex(String folderPath, List<DocTable> docTables) {
+		Config conf = ConfigUtil.getConfig();
+		String defaultSchemaName = conf.getString("database.defaultschema");
+
+		String fileName = getOutputFileName(OPERATION_TYPE_ENUM.INDEX);
+		StringBuilder sbSql = new StringBuilder();
+		for (DocTable docTable : docTables) {
+			if (docTable.getIndexes() == null) {
+				continue;
+			}
+			for (DocIndex docIndex : docTable.getIndexes()) {
+				sbSql.append("CREATE INDEX " + docIndex.getIndexName() + " ON " + defaultSchemaName + "."
+						+ docIndex.getTableName() + " (" + String.join(",", docIndex.getColumns()) + ");");
+				sbSql.append(System.lineSeparator());
+			}
 		}
 		writeSqlToFile(folderPath, fileName, sbSql);
 		return folderPath + fileName;
@@ -386,6 +438,10 @@ public class BackgroundWorker {
 			return "DisableTrigger_" + LocalDateTime.now().format(formatter) + ".sql";
 		case GRANT_DML_PRIVILEGE:
 			return "GrantDmlPrivilege_" + LocalDateTime.now().format(formatter) + ".sql";
+		case UNIQUE_CONSTRAINT:
+			return "UniqueConstraint_" + LocalDateTime.now().format(formatter) + ".sql";
+		case INDEX:
+			return "CreateIndex_" + LocalDateTime.now().format(formatter) + ".sql";
 		default:
 			break;
 		}

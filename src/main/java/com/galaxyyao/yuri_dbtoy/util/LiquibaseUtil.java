@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -78,7 +79,8 @@ public class LiquibaseUtil {
 
 	private static void removeSetDefineLine(String sqlFilePath) throws IOException {
 		File sqlFile = new File(sqlFilePath);
-		ImmutableList<String> lines = Files.asCharSource(sqlFile, Charsets.UTF_8).readLines();
+		Charset charset = Charset.defaultCharset();
+		ImmutableList<String> lines = Files.asCharSource(sqlFile, charset).readLines();
 		File newSqlFile = new File(sqlFilePath.substring(0, sqlFilePath.lastIndexOf(".")) + "_nodefine" + ".sql");
 		CharSink sink = Files.asCharSink(newSqlFile, Charsets.UTF_8);
 		List<String> newSqlFileLines =new ArrayList<String>();

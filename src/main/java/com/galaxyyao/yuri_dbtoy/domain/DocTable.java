@@ -13,6 +13,10 @@ public class DocTable {
 	
 	private List<DocColumn> columns;
 	
+	private List<String> uniqueConstraintColumns;
+	
+	private List<DocIndex> indexes;
+	
 	private Boolean isSelected;
 
 	public int getTableIndex() {
@@ -61,5 +65,21 @@ public class DocTable {
 
 	public void setSyncColumns(List<String> syncColumns) {
 		this.syncColumns = syncColumns;
+	}
+
+	public List<String> getUniqueConstraintColumns() {
+		return uniqueConstraintColumns;
+	}
+
+	public void setUniqueConstraintColumns(List<String> uniqueConstraintColumns) {
+		this.uniqueConstraintColumns = uniqueConstraintColumns;
+	}
+
+	public List<DocIndex> getIndexes() {
+		return indexes;
+	}
+
+	public void setIndexes(List<DocIndex> indexes) {
+		this.indexes = indexes;
 	}
 }

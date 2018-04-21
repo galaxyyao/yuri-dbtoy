@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import com.galaxyyao.yuri_dbtoy.constant.DbToolConstant;
 import com.galaxyyao.yuri_dbtoy.domain.DocColumn;
+import com.galaxyyao.yuri_dbtoy.domain.DocIndex;
 import com.galaxyyao.yuri_dbtoy.domain.DocTable;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -40,6 +41,7 @@ public class ExcelUtil {
 			Sheet categorySheet = wb.getSheetAt(0);
 			docTables = getDocTableFromCategory(categorySheet);
 
+			//获取表的列定义
 			for (int i = 1; i < sheetNumber; i++) {
 				Sheet sheet = wb.getSheetAt(i);
 				logger.info("Reading sheet name: " + sheet.getSheetName());
@@ -52,6 +54,18 @@ public class ExcelUtil {
 					setTableColumns(docTable, sheet);
 				}
 			}
+			
+			//获取索引定义
+			Config conf = ConfigUtil.getConfig();
+			String indexSheetName = conf.getString("template.index.sheetname");
+			for (int i = 1; i < sheetNumber; i++) {
+				Sheet sheet = wb.getSheetAt(i);
+				if(indexSheetName.equals(sheet.getSheetName())) {
+					setIndex(sheet, docTables);
+					break;
+				}
+			}
+			
 			return docTables;
 		} catch (IOException | EncryptedDocumentException | InvalidFormatException e) {
 			logger.error("Error occurs:", e);
@@ -71,6 +85,45 @@ public class ExcelUtil {
 			}
 		}
 	}
+	
+	private static void setIndex(Sheet sheet, List<DocTable> docTables) {
+		Config conf = ConfigUtil.getConfig();
+		int tableNameColNo = conf.getInt("template.index.colno.tablename");
+		int indexColNo = conf.getInt("template.index.colno.indexcol");
+		int indexNameColNo = conf.getInt("template.index.colno.indexname");
+		
+		int rowsCount = sheet.getLastRowNum();
+		for (int i = 1; i <= rowsCount; i++) {
+			Row row = sheet.getRow(i);
+			if (row == null || row.getCell(tableNameColNo) == null || row.getCell(indexColNo) == null || row.getCell(indexNameColNo) == null) {
+				continue;
+			}
+			String tableName = row.getCell(tableNameColNo).getStringCellValue().toLowerCase();
+			String indexName = row.getCell(indexNameColNo).getStringCellValue().toLowerCase();
+			List<String> indexColumns;
+			if (row.getCell(indexColNo) == null) {
+				indexColumns = new ArrayList<>();
+			} else {
+				String indexColText = row.getCell(indexColNo).getStringCellValue();
+				indexColumns = Lists.newArrayList(indexColText.split(","));
+				for (int j = 0; j < indexColumns.size(); j++) {
+					indexColumns.set(j, indexColumns.get(j).trim().toLowerCase());
+				}
+			}
+			
+			DocIndex docIndex = new DocIndex();
+			docIndex.setTableName(tableName);
+			docIndex.setIndexName(indexName);
+			docIndex.setColumns(indexColumns);
+			DocTable docTable = docTables.stream().filter(dt -> dt.getTableName().equals(tableName)).findAny().orElse(null);
+			if(docTable!=null) {
+				if(docTable.getIndexes()==null) {
+					docTable.setIndexes(new ArrayList<DocIndex>());
+				}
+				docTable.getIndexes().add(docIndex);
+			}
+		}
+	}
 
 	private static List<DocTable> getDocTableFromCategory(Sheet sheet) {
 		int rowsCount = sheet.getLastRowNum();
@@ -79,7 +132,8 @@ public class ExcelUtil {
 		Config conf = ConfigUtil.getConfig();
 		int tableNameColNo = conf.getInt("template.db.colno.tablename");
 		int tableDescColNo = conf.getInt("template.db.colno.tabledesc");
-		int syncColumnColNo = conf.getInt("template.db.colno.syncolumn");
+		int syncColumnColNo = conf.getInt("template.db.colno.synccolumn");
+		int uniqueConstraintColNo = conf.getInt("template.db.colno.uniqueconstraintcolumn");
 
 		List<DocTable> docTables = new ArrayList<DocTable>();
 		for (int i = 1; i <= rowsCount; i++) {
@@ -95,12 +149,24 @@ public class ExcelUtil {
 			// 填充同步字段
 			List<String> tableSyncColumns;
 			if (row.getCell(syncColumnColNo) == null) {
-				tableSyncColumns = new ArrayList<String>();
+				tableSyncColumns = new ArrayList<>();
 			} else {
-				String tableSyncColumnText = row.getCell(4).getStringCellValue();
+				String tableSyncColumnText = row.getCell(syncColumnColNo).getStringCellValue();
 				tableSyncColumns = Lists.newArrayList(tableSyncColumnText.split(","));
-				for (String tableSyncColumn : tableSyncColumns) {
-					tableSyncColumn = tableSyncColumn.trim().toLowerCase();
+				for (int j = 0; j < tableSyncColumns.size(); j++) {
+					tableSyncColumns.set(j, tableSyncColumns.get(j).trim().toLowerCase());
+				}
+			}
+
+			// 填充唯一约束字段
+			List<String> uniqueConstraintColumns;
+			if (row.getCell(uniqueConstraintColNo) == null) {
+				uniqueConstraintColumns = new ArrayList<>();
+			} else {
+				String uniqueConstraintColumnText = row.getCell(uniqueConstraintColNo).getStringCellValue();
+				uniqueConstraintColumns = Lists.newArrayList(uniqueConstraintColumnText.split(","));
+				for (int j = 0; j < uniqueConstraintColumns.size(); j++) {
+					uniqueConstraintColumns.set(j, uniqueConstraintColumns.get(j).trim().toLowerCase());
 				}
 			}
 
@@ -109,6 +175,7 @@ public class ExcelUtil {
 			docTable.setTableName(tableName.trim());
 			docTable.setTableDesc(tableDesc);
 			docTable.setSyncColumns(tableSyncColumns);
+			docTable.setUniqueConstraintColumns(uniqueConstraintColumns);
 			docTable.setIsSelected(false);
 			docTables.add(docTable);
 		}
@@ -131,7 +198,7 @@ public class ExcelUtil {
 			DocColumn docColumn = new DocColumn();
 			docColumn.setColIndex(i - 1);
 			String columnName = row.getCell(colNameColNo).getStringCellValue().toLowerCase().trim();
-			if(Strings.isNullOrEmpty(columnName)) {
+			if (Strings.isNullOrEmpty(columnName)) {
 				continue;
 			}
 			docColumn.setColName(columnName);

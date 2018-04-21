@@ -84,6 +84,15 @@ public class MainPanel extends JPanel implements ActionListener {
 	 */
 	private JButton generateGrantDmlPrivilegeButton;
 	/**
+	 * 生成创建唯一约束语句按钮
+	 */
+	private JButton generateCreateUniqueConstraintButton;
+	/**
+	 * 生成创建索引语句按钮
+	 */
+	private JButton generateCreateIndexButton;
+	
+	/**
 	 * 日志文本框
 	 */
 	private JTextArea logTextArea;
@@ -204,11 +213,21 @@ public class MainPanel extends JPanel implements ActionListener {
 		generateDisableTriggerButton.addActionListener(this);
 		generateDisableTriggerButton.setEnabled(false);
 		buttonPanel.add(generateDisableTriggerButton);
-		
+
 		generateGrantDmlPrivilegeButton = new JButton("生成授权表DML权限语句");
 		generateGrantDmlPrivilegeButton.addActionListener(this);
 		generateGrantDmlPrivilegeButton.setEnabled(false);
 		buttonPanel.add(generateGrantDmlPrivilegeButton);
+
+		generateCreateUniqueConstraintButton = new JButton("生成创建唯一约束语句");
+		generateCreateUniqueConstraintButton.addActionListener(this);
+		generateCreateUniqueConstraintButton.setEnabled(false);
+		buttonPanel.add(generateCreateUniqueConstraintButton);
+
+		generateCreateIndexButton = new JButton("生成创建索引语句");
+		generateCreateIndexButton.addActionListener(this);
+		generateCreateIndexButton.setEnabled(false);
+		buttonPanel.add(generateCreateIndexButton);
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -234,6 +253,10 @@ public class MainPanel extends JPanel implements ActionListener {
 			guiOnGenerateDisableTriggerButtonClicked();
 		} else if (e.getSource() == generateGrantDmlPrivilegeButton) {
 			guiOnGenerateGrantDmlPrivilegeButtonClicked();
+		} else if (e.getSource() == generateCreateUniqueConstraintButton) {
+			guiOnGenerateCreateUniqueConstraintButtonClicked();
+		} else if (e.getSource() == generateCreateIndexButton) {
+			guiOnGenerateCreateIndexButtonClicked();
 		}
 	}
 
@@ -277,6 +300,8 @@ public class MainPanel extends JPanel implements ActionListener {
 		generateEnableTriggerButton.setEnabled(true);
 		generateDisableTriggerButton.setEnabled(true);
 		generateGrantDmlPrivilegeButton.setEnabled(true);
+		generateCreateUniqueConstraintButton.setEnabled(true);
+		generateCreateIndexButton.setEnabled(true);
 	}
 
 	private void guiOnGenerateCreateTableSqlButtonClicked() {
@@ -331,7 +356,8 @@ public class MainPanel extends JPanel implements ActionListener {
 		for (DocTable operableDocTable : operableDocTables) {
 			operableDocTablesWithCommonColumns.add(worker.getDocTableWithCommonColumns(operableDocTable));
 		}
-		String sqlFilePath = worker.generateTruncateAndInsertSql(folderPath, operableDocTables, operableDocTablesWithCommonColumns);
+		String sqlFilePath = worker.generateTruncateAndInsertSql(folderPath, operableDocTables,
+				operableDocTablesWithCommonColumns);
 		logger.info("SQL File location: " + sqlFilePath);
 		logTextArea.append("全删全导语句已生成" + DbToolConstant.NEW_LINE);
 	}
@@ -344,7 +370,8 @@ public class MainPanel extends JPanel implements ActionListener {
 		for (DocTable operableDocTable : operableDocTables) {
 			operableDocTablesWithCommonColumns.add(worker.getDocTableWithCommonColumns(operableDocTable));
 		}
-		String sqlFilePath = worker.generateOnInsertTrigger(folderPath, operableDocTables, operableDocTablesWithCommonColumns);
+		String sqlFilePath = worker.generateOnInsertTrigger(folderPath, operableDocTables,
+				operableDocTablesWithCommonColumns);
 		logger.info("SQL File location: " + sqlFilePath);
 		logTextArea.append("On Insert触发器语句已生成" + DbToolConstant.NEW_LINE);
 	}
@@ -384,7 +411,7 @@ public class MainPanel extends JPanel implements ActionListener {
 		logger.info("SQL File location: " + sqlFilePath);
 		logTextArea.append("禁用触发器语句已生成" + DbToolConstant.NEW_LINE);
 	}
-	
+
 	private void guiOnGenerateGrantDmlPrivilegeButtonClicked() {
 		logger.info("Generate grant dml privilege SQL.");
 		List<DocTable> operableDocTables = getOperableDocTables();
@@ -392,6 +419,24 @@ public class MainPanel extends JPanel implements ActionListener {
 		String sqlFilePath = worker.generateGrantDmlPrivilege(folderPath, operableDocTables);
 		logger.info("SQL File location: " + sqlFilePath);
 		logTextArea.append("授权表DML权限语句已生成" + DbToolConstant.NEW_LINE);
+	}
+	
+	private void guiOnGenerateCreateUniqueConstraintButtonClicked() {
+		logger.info("Generate create unique constraint SQL.");
+		List<DocTable> operableDocTables = getOperableDocTables();
+		BackgroundWorker worker = new BackgroundWorker();
+		String sqlFilePath = worker.generateCreateUniqueConstraint(folderPath, operableDocTables);
+		logger.info("SQL File location: " + sqlFilePath);
+		logTextArea.append("创建唯一约束语句已生成" + DbToolConstant.NEW_LINE);
+	}
+	
+	private void guiOnGenerateCreateIndexButtonClicked() {
+		logger.info("Generate create index SQL.");
+		List<DocTable> operableDocTables = getOperableDocTables();
+		BackgroundWorker worker = new BackgroundWorker();
+		String sqlFilePath = worker.generateCreateIndex(folderPath, operableDocTables);
+		logger.info("SQL File location: " + sqlFilePath);
+		logTextArea.append("创建索引语句已生成" + DbToolConstant.NEW_LINE);
 	}
 
 	private void setDbTableModel(List<DocTable> docTables) {
