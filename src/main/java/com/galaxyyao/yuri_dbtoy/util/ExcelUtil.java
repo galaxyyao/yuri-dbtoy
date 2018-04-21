@@ -41,7 +41,7 @@ public class ExcelUtil {
 			Sheet categorySheet = wb.getSheetAt(0);
 			docTables = getDocTableFromCategory(categorySheet);
 
-			//获取表的列定义
+			// 获取表的列定义
 			for (int i = 1; i < sheetNumber; i++) {
 				Sheet sheet = wb.getSheetAt(i);
 				logger.info("Reading sheet name: " + sheet.getSheetName());
@@ -54,18 +54,18 @@ public class ExcelUtil {
 					setTableColumns(docTable, sheet);
 				}
 			}
-			
-			//获取索引定义
+
+			// 获取索引定义
 			Config conf = ConfigUtil.getConfig();
 			String indexSheetName = conf.getString("template.index.sheetname");
 			for (int i = 1; i < sheetNumber; i++) {
 				Sheet sheet = wb.getSheetAt(i);
-				if(indexSheetName.equals(sheet.getSheetName())) {
+				if (indexSheetName.equals(sheet.getSheetName())) {
 					setIndex(sheet, docTables);
 					break;
 				}
 			}
-			
+
 			return docTables;
 		} catch (IOException | EncryptedDocumentException | InvalidFormatException e) {
 			logger.error("Error occurs:", e);
@@ -85,17 +85,18 @@ public class ExcelUtil {
 			}
 		}
 	}
-	
+
 	private static void setIndex(Sheet sheet, List<DocTable> docTables) {
 		Config conf = ConfigUtil.getConfig();
 		int tableNameColNo = conf.getInt("template.index.colno.tablename");
 		int indexColNo = conf.getInt("template.index.colno.indexcol");
 		int indexNameColNo = conf.getInt("template.index.colno.indexname");
-		
+
 		int rowsCount = sheet.getLastRowNum();
 		for (int i = 1; i <= rowsCount; i++) {
 			Row row = sheet.getRow(i);
-			if (row == null || row.getCell(tableNameColNo) == null || row.getCell(indexColNo) == null || row.getCell(indexNameColNo) == null) {
+			if (row == null || row.getCell(tableNameColNo) == null || row.getCell(indexColNo) == null
+					|| row.getCell(indexNameColNo) == null) {
 				continue;
 			}
 			String tableName = row.getCell(tableNameColNo).getStringCellValue().toLowerCase();
@@ -110,14 +111,15 @@ public class ExcelUtil {
 					indexColumns.set(j, indexColumns.get(j).trim().toLowerCase());
 				}
 			}
-			
+
 			DocIndex docIndex = new DocIndex();
 			docIndex.setTableName(tableName);
 			docIndex.setIndexName(indexName);
 			docIndex.setColumns(indexColumns);
-			DocTable docTable = docTables.stream().filter(dt -> dt.getTableName().equals(tableName)).findAny().orElse(null);
-			if(docTable!=null) {
-				if(docTable.getIndexes()==null) {
+			DocTable docTable = docTables.stream().filter(dt -> dt.getTableName().equals(tableName)).findAny()
+					.orElse(null);
+			if (docTable != null) {
+				if (docTable.getIndexes() == null) {
 					docTable.setIndexes(new ArrayList<DocIndex>());
 				}
 				docTable.getIndexes().add(docIndex);
@@ -160,7 +162,8 @@ public class ExcelUtil {
 
 			// 填充唯一约束字段
 			List<String> uniqueConstraintColumns;
-			if (row.getCell(uniqueConstraintColNo) == null) {
+			if (row.getCell(uniqueConstraintColNo) == null
+					|| Strings.isNullOrEmpty(row.getCell(uniqueConstraintColNo).getStringCellValue())) {
 				uniqueConstraintColumns = new ArrayList<>();
 			} else {
 				String uniqueConstraintColumnText = row.getCell(uniqueConstraintColNo).getStringCellValue();

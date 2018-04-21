@@ -406,7 +406,11 @@ public class BackgroundWorker {
 				continue;
 			}
 			for (DocIndex docIndex : docTable.getIndexes()) {
-				sbSql.append("CREATE INDEX " + docIndex.getIndexName() + " ON " + defaultSchemaName + "."
+				String indexName = "idx_" + docTable.getTableName().substring(1) + "_" + docIndex.getIndexName();
+				if(indexName.length()>30) {
+					indexName=indexName.substring(0, 29);
+				}
+				sbSql.append("CREATE INDEX " + indexName + " ON " + defaultSchemaName + "."
 						+ docIndex.getTableName() + " (" + String.join(",", docIndex.getColumns()) + ");");
 				sbSql.append(System.lineSeparator());
 			}
