@@ -46,7 +46,7 @@ public class ExcelUtil {
 				Sheet sheet = wb.getSheetAt(i);
 				logger.info("Reading sheet name: " + sheet.getSheetName());
 				DocTable docTable = docTables.stream()
-						.filter(dt -> sheet.getSheetName().toLowerCase().equals(dt.getTableName())).findFirst()
+						.filter(dt -> sheet.getSheetName().trim().toLowerCase().equals(dt.getTableName())).findFirst()
 						.orElse(null);
 				if (docTable == null) {
 					docTables.remove(docTable);
@@ -145,7 +145,7 @@ public class ExcelUtil {
 			}
 			String tableName = row.getCell(tableNameColNo).getStringCellValue().toLowerCase();
 			String tableDesc = row.getCell(tableDescColNo).getStringCellValue().trim();
-			if (Strings.isNullOrEmpty(tableName) || Strings.isNullOrEmpty(tableDesc)) {
+			if (Strings.isNullOrEmpty(tableName)) {
 				continue;
 			}
 			// 填充同步字段
@@ -181,6 +181,7 @@ public class ExcelUtil {
 			docTable.setUniqueConstraintColumns(uniqueConstraintColumns);
 			docTable.setIsSelected(false);
 			docTables.add(docTable);
+			logger.info("Get table definition for:" + docTable.getTableName());
 		}
 		return docTables;
 	}
@@ -200,7 +201,11 @@ public class ExcelUtil {
 			Row row = sheet.getRow(i);
 			DocColumn docColumn = new DocColumn();
 			docColumn.setColIndex(i - 1);
+			if (row == null || row.getCell(colNameColNo) == null) {
+				continue;
+			}
 			String columnName = row.getCell(colNameColNo).getStringCellValue().toLowerCase().trim();
+			logger.info(columnName);
 			if (Strings.isNullOrEmpty(columnName)) {
 				continue;
 			}

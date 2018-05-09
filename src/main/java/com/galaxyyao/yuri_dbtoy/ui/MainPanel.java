@@ -91,7 +91,7 @@ public class MainPanel extends JPanel implements ActionListener {
 	 * 生成创建索引语句按钮
 	 */
 	private JButton generateCreateIndexButton;
-	
+
 	/**
 	 * 日志文本框
 	 */
@@ -420,7 +420,7 @@ public class MainPanel extends JPanel implements ActionListener {
 		logger.info("SQL File location: " + sqlFilePath);
 		logTextArea.append("授权表DML权限语句已生成" + DbToolConstant.NEW_LINE);
 	}
-	
+
 	private void guiOnGenerateCreateUniqueConstraintButtonClicked() {
 		logger.info("Generate create unique constraint SQL.");
 		List<DocTable> operableDocTables = getOperableDocTables();
@@ -429,7 +429,7 @@ public class MainPanel extends JPanel implements ActionListener {
 		logger.info("SQL File location: " + sqlFilePath);
 		logTextArea.append("创建唯一约束语句已生成" + DbToolConstant.NEW_LINE);
 	}
-	
+
 	private void guiOnGenerateCreateIndexButtonClicked() {
 		logger.info("Generate create index SQL.");
 		List<DocTable> operableDocTables = getOperableDocTables();
@@ -441,6 +441,9 @@ public class MainPanel extends JPanel implements ActionListener {
 
 	private void setDbTableModel(List<DocTable> docTables) {
 		DefaultTableModel model = (DefaultTableModel) dbTable.getModel();
+		while (model.getRowCount() > 0) {
+			model.removeRow(0);
+		}
 		for (int i = 0; i < docTables.size(); i++) {
 			DocTable docTable = docTables.get(i);
 			model.addRow(new Object[] { docTable.getTableIndex(), docTable.getTableName(), docTable.getTableDesc(),
